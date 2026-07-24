@@ -1,0 +1,8 @@
+services:
+  wellguard:
+    build: .
+    # loopback bind only: no production data leaves the host
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - WELLGUARD_ADVISORY_ONLY=1

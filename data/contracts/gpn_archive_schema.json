@@ -1,0 +1,14 @@
+{
+  "version": "0.1",
+  "status": "template_only_no_customer_data",
+  "required_metadata": ["asset_id_hash", "well_id_hash", "timezone", "sampling_interval_s", "unit_system"],
+  "required_channels": ["t_min", "freq_hz", "whp_bar", "intake_p_bar", "current_a", "load_pct", "q_liq_m3d", "motor_t_c", "casing_p_bar"],
+  "optional_channels": ["water_cut_pct", "gas_rate_m3d", "vibration_rms", "event_id", "operator_annotation"],
+  "rules": [
+    "No raw names, coordinates, asset identifiers, or free-text comments",
+    "Pressure unit must be declared as bar or psi",
+    "Timestamp timezone and sampling interval are mandatory",
+    "Event labels are supplied by the asset owner and never inferred by the loader",
+    "Archive remains on the owner's controlled storage"
+  ]
+}

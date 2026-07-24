@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wellguard-os"
+version = "0.1.3"
+description = "Advisory surveillance of complicated ESP/gas-lift wells (TRIZ fund). Physics-guided + ML. Advisory only."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "KonkovDV"}]
+keywords = ["esp", "artificial-lift", "oil-gas", "surveillance", "physics-guided", "on-prem", "advisory", "triz"]
+dependencies = ["numpy>=1.24", "pandas>=2.0"]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
+ui = ["streamlit>=1.30"]
+ml = ["scikit-learn>=1.3"]
+dev = ["pytest>=8.0", "scikit-learn>=1.3"]
+
+[project.scripts]
+wellguard = "wellguard.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["wellguard*", "benchmark*"]
