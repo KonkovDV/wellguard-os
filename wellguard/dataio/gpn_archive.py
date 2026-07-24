@@ -6,7 +6,7 @@ CSV/Parquet file after the asset owner supplies the tag dictionary and units.
 from __future__ import annotations
 from pathlib import Path
 import pandas as pd
-from ..schema import CHANNELS, qc_report
+from ..schema import REQUIRED_CHANNELS, qc_report
 
 REQUIRED_METADATA = ["asset_id_hash", "well_id_hash", "timezone", "sampling_interval_s", "unit_system"]
 

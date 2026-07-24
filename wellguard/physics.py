@@ -12,20 +12,21 @@ EPS = 1e-6
 def physics_features(df: pd.DataFrame) -> pd.DataFrame:
     freq_n = np.asarray(df["freq_hz"], dtype=float) / 50.0
     q = np.asarray(df["q_liq_m3d"], dtype=float)
-    intake = np.asarray(df["intake_p_bar"], dtype=float)
     whp = np.asarray(df["whp_bar"], dtype=float)
     current = np.asarray(df["current_a"], dtype=float)
     load = np.asarray(df["load_pct"], dtype=float)
     motor_t = np.asarray(df["motor_t_c"], dtype=float)
 
+    if "intake_p_bar" in df.columns:
+        intake = np.asarray(df["intake_p_bar"], dtype=float)
+    else:
+        intake = np.full(len(df), np.nan)
+
     # Pump differential proxy and head coefficient via affinity law (H ~ f^2).
     pump_dp = intake - whp
     head_coef = pump_dp / (freq_n ** 2 + EPS)
-    # Rate delivered per unit speed (Q ~ f).
     q_per_freq = q / (freq_n + EPS)
-    # Specific current: motor current per unit rate (density / gas proxy).
     current_per_q = current / (np.abs(q) + EPS)
-    # Local current variability (gas interference signature), causal rolling std.
     cur = pd.Series(current)
     current_var = cur.rolling(9, min_periods=3).std().bfill().to_numpy()
 
@@ -42,6 +43,8 @@ def physics_features(df: pd.DataFrame) -> pd.DataFrame:
         "q_liq_m3d": q,
         "motor_t_c": motor_t,
     })
+    if "water_cut_pct" in df.columns:
+        out["water_cut_pct"] = np.asarray(df["water_cut_pct"], dtype=float)
     return out
 
 

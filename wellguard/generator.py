@@ -99,6 +99,11 @@ def generate(scenario: str, seed: int = 0, n: int = 720, onset: int | None = Non
         lo = min(onset + 200, n - 5)
         quality[lo:lo + 4] = 0
 
+    # Declared operating-mode label (letter minimum input).
+    mode = np.full(n, "production", dtype=object)
+    if scenario == "operation_change":
+        mode[onset:] = "transition"
+
     df = pd.DataFrame({
         "t_min": idx.astype(float),
         "freq_hz": b["freq"],
@@ -109,6 +114,7 @@ def generate(scenario: str, seed: int = 0, n: int = 720, onset: int | None = Non
         "q_liq_m3d": b["q"],
         "motor_t_c": b["motor_t"],
         "casing_p_bar": b["casing"],
+        "operating_mode": mode,
         "quality_ok": quality,
     })
     df.attrs["scenario"] = scenario

@@ -5,14 +5,17 @@
 - **Данные:** вход read-only; сервис не персистит телеметрию.
 - **Границы:** нет RBAC, подписанных артефактов и неизменяемого аудита — это демонстратор, не средство безопасности.
 
-## Input hardening (v0.1.1 → v0.1.3)
+## Input hardening (v0.1.1 → v0.1.4)
 
-- Empty, missing-column, non-numeric, NaN/Inf, **out-of-range**, and invalid `quality_ok` fail closed as `sensor_quality_issue`.
-- Channels are coerced to float once before physics; dtype mismatch cannot crash the rule layer.
-- API upload limit: 25 MiB; row count checked from newline estimate **before** `read_csv`, then again after parse (max 2,000,000).
-- No automatic unit inference; adapters require explicit pressure units.
+- Empty, missing-required, non-numeric, NaN/Inf, **out-of-range**, invalid `quality_ok`, and **timeline** defects fail closed as `sensor_quality_issue`.
+- Required: time, frequency, current, load, WHP, motor T, casing P, liquid rate, **`operating_mode`**.
+- Conditional: **`intake_p_bar` optional** (letter: «если доступно»); without it gas/sensor-fault paths degrade.
+- Optional extras accepted per GPN contract (water cut, gas, vibration, start/stop, alarms, report flags, annotations).
+- Channels coerced to float once before physics; dtype mismatch cannot crash the rule layer.
+- API upload limit: 25 MiB; row count checked before and after parse (max 2,000,000).
+- No automatic unit inference; adapters require explicit pressure units; expected units exposed in QC.
 - 3W loader converts documented Pa → canonical bar.
-- Shadow decision logs are forced under `artifacts/` (no path traversal).
-- Frequency step cannot suppress a gas/restriction signature; operation_change requires affinity-consistent response.
-- Baseline uses the most stable early window to resist early-onset poisoning.
+- Shadow decision logs forced under `artifacts/`.
+- Operator card: `heuristic_score` is rule strength, not probability; `output_limits` on every card.
+- Local UI: synthetic demo **or** read-only CSV upload.
 - No persistence, external network, actuator, or command channel.

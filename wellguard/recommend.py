@@ -13,20 +13,34 @@ RECS = {
     "sensor_quality_issue": ("verify_data", "Низкое качество данных в окне. Решение не выносится до восстановления телеметрии."),
 }
 
+OUTPUT_LIMITS = (
+    "Карточка — повод для проверки, не окончательный диагноз. "
+    "Не подтверждает отказ, аварию или иное опасное событие. "
+    "Не выдаёт остаточный ресурс и не формирует команды управления."
+)
+
 
 def operator_card(cls: dict) -> dict:
     action, text = RECS.get(cls["event_class"], ("monitor", "Наблюдение."))
+    # Letter: heuristic score = rule strength, NOT event probability.
+    heuristic = round(float(cls["confidence"]), 3)
     card = {
         "event_class": cls["event_class"],
         "recommended_action": action,
         "explanation": text,
         "onset_index": cls["onset_index"],
-        "confidence": round(float(cls["confidence"]), 3),
+        "confidence": heuristic,  # retained for API compatibility
+        "heuristic_score": heuristic,
+        "score_type": "heuristic_rule_strength",
+        "score_is_probability": False,
         "is_complication": cls["is_complication"],
         "drivers": cls.get("drivers", {}),
         "tail_completeness": cls.get("tail_completeness"),
+        "output_limits": OUTPUT_LIMITS,
         "advisory_only": True,
         "actuation": "never",
+        "replaces_engineer": False,
+        "confirms_failure_or_accident": False,
     }
     qc = cls.get("qc")
     if isinstance(qc, dict):
@@ -36,5 +50,9 @@ def operator_card(cls: dict) -> dict:
             "out_of_range": qc.get("out_of_range"),
             "numeric_missing": qc.get("numeric_missing"),
             "issues": list(qc.get("issues") or []),
+            "warnings": list(qc.get("warnings") or []),
+            "intake_available": qc.get("intake_available"),
+            "present_optional_extras": list(qc.get("present_optional_extras") or []),
+            "expected_units": qc.get("expected_units"),
         }
     return card

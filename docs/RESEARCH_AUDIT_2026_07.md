@@ -29,7 +29,7 @@ The prior projects were technically credible but either overlapped a saturated c
 
 Current synthetic benchmark: 84 cases, 12 seeds, 7 scenarios; class accuracy 1.0, complication precision/recall 1.0, false complication alarms 0/hour, maximum detection delay 100 minutes. These numbers are **mechanics checks only**. The benchmark is intentionally separable and must not be presented as field accuracy.
 
-Hardening added after audit: empty/missing/non-numeric/NaN input fails closed; robust scale handles flat sensors; explicit pressure-unit adapter; API upload and row limits; no unit inference; no persistence; no actuator or external network channel; 24 tests pass; CI and red-team gates included.
+Hardening added after audit: empty/missing/non-numeric/NaN/out-of-range input fails closed; robust scale handles flat sensors; explicit pressure-unit adapter; API upload and row limits; no unit inference; no persistence; no actuator or external network channel; **≥28 automated tests** (40+ in v0.1.4 including letter-alignment); CI and red-team gates included.
 
 ## Remaining blockers before industrial claim
 

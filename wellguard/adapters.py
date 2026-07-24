@@ -1,11 +1,11 @@
 """Explicit adapters for public/customer telemetry schemas.
 
 No network access, unit guessing, or silent imputation. Missing channels remain
-visible to the QC gate and result in sensor_quality_issue.
+visible to the QC gate. Intake may be absent; operating_mode is required.
 """
 from __future__ import annotations
 import pandas as pd
-from .schema import CHANNELS
+from .schema import REQUIRED_CHANNELS, CONDITIONAL_CHANNELS, MODE_COL
 
 def map_columns(df: pd.DataFrame, mapping: dict[str, str], *, source_pressure_unit: str = "bar") -> pd.DataFrame:
     out = df.rename(columns=mapping).copy()
@@ -18,4 +18,8 @@ def map_columns(df: pd.DataFrame, mapping: dict[str, str], *, source_pressure_un
     return out
 
 def validate_canonical(df: pd.DataFrame) -> list[str]:
-    return [c for c in CHANNELS if c not in df.columns]
+    missing = [c for c in REQUIRED_CHANNELS if c not in df.columns]
+    return missing
+
+def missing_conditional(df: pd.DataFrame) -> list[str]:
+    return [c for c in CONDITIONAL_CHANNELS if c not in df.columns]

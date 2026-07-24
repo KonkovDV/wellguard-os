@@ -1,14 +1,47 @@
 {
-  "version": "0.1",
+  "version": "0.1.4",
   "status": "template_only_no_customer_data",
   "required_metadata": ["asset_id_hash", "well_id_hash", "timezone", "sampling_interval_s", "unit_system"],
-  "required_channels": ["t_min", "freq_hz", "whp_bar", "intake_p_bar", "current_a", "load_pct", "q_liq_m3d", "motor_t_c", "casing_p_bar"],
-  "optional_channels": ["water_cut_pct", "gas_rate_m3d", "vibration_rms", "event_id", "operator_annotation"],
+  "required_channels": [
+    "t_min", "freq_hz", "whp_bar", "current_a", "load_pct",
+    "q_liq_m3d", "motor_t_c", "casing_p_bar", "operating_mode"
+  ],
+  "conditional_channels": ["intake_p_bar"],
+  "optional_channels": [
+    "quality_ok",
+    "water_cut_pct",
+    "gas_rate_m3d",
+    "gas_factor_m3m3",
+    "vibration_rms",
+    "esp_start_stop",
+    "existing_alarm",
+    "daily_report_flag",
+    "operator_annotation",
+    "intervention_flag"
+  ],
+  "expected_units": {
+    "t_min": "min",
+    "freq_hz": "Hz",
+    "whp_bar": "bar",
+    "intake_p_bar": "bar",
+    "current_a": "A",
+    "load_pct": "%",
+    "q_liq_m3d": "m3/d",
+    "motor_t_c": "C",
+    "casing_p_bar": "bar",
+    "water_cut_pct": "%",
+    "gas_rate_m3d": "m3/d",
+    "gas_factor_m3m3": "m3/m3",
+    "vibration_rms": "mm/s"
+  },
   "rules": [
-    "No raw names, coordinates, asset identifiers, or free-text comments",
+    "No raw names, coordinates, or unprotected personal identifiers",
+    "operator_annotation must be a short coded note or hash — not free-text PII",
     "Pressure unit must be declared as bar or psi",
     "Timestamp timezone and sampling interval are mandatory",
     "Event labels are supplied by the asset owner and never inferred by the loader",
-    "Archive remains on the owner's controlled storage"
+    "Archive remains on the owner's controlled storage",
+    "optional_channels are accepted for pilot correlation; only water_cut_pct currently reinforces water_breakthrough_candidate",
+    "esp_start_stop, existing_alarm, daily_report_flag, intervention_flag are passthrough for shadow journaling"
   ]
 }
