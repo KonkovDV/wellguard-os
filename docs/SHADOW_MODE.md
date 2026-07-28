@@ -2,9 +2,14 @@
 
 ## What is implemented now
 
-`python shadow/run_shadow.py <canonical.csv> --output shadow_decisions.jsonl`
-replays fixed windows through the same pipeline as the API and emits operator cards
-under `artifacts/` only (output paths are sandboxed; `..` and absolute paths cannot escape).
+`python -m wellguard.cli shadow <canonical.csv> --output shadow_decisions.jsonl`
+(or `python shadow/run_shadow.py …`) replays fixed windows through the same pipeline and
+writes an append-only JSONL journal under `artifacts/` only.
+
+Each record includes: operator card, `model_version`, QC, optional `window_context`
+(e.g. `existing_alarm_*` passthrough), and empty `expert_disposition` /
+`expert_useful` / `expert_notes_code` slots for pilot review.
+
 It is read-only: no SCADA write path, no actuator, no external network, no hidden upload.
 
 ## Gating sequence

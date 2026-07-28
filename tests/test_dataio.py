@@ -21,3 +21,4 @@ def test_gpn_archive_explicit_units():
     md={'asset_id_hash':'a','well_id_hash':'w','timezone':'UTC','sampling_interval_s':60,'unit_system':'SI'}
     out, meta=load_archive(p, {}, md, pressure_unit='bar')
     assert meta['qc']['schema_ok'] is True
+    assert meta['contract']['contract_ok'] is True

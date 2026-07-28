@@ -64,9 +64,9 @@ def classify(df: pd.DataFrame) -> dict:
     feat = physics_features(df)
     n = len(feat)
     warmup = min(WARMUP, max(30, n // 4))
-    intake_available = bool(qc.get("intake_available")) and np.isfinite(
+    intake_available = bool(qc.get("intake_available")) and bool(np.isfinite(
         feat["intake_p_bar"].to_numpy(dtype=float)
-    ).any()
+    ).any())
 
     # trailing data-quality gate
     if QUALITY_COL in df.columns:

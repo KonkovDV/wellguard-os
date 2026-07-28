@@ -1,4 +1,4 @@
-# WellGuard OS v0.1.4
+# WellGuard OS v0.1.5
 
 Открытый on-prem **адвайзорный демонстратор** раннего выявления, классификации и временной
 локализации осложнённых режимов механизированной скважины (ЭЦН) по штатной телеметрии.
@@ -30,12 +30,14 @@ pip install -e ".[dev]"
 python -m wellguard.cli demo --scenario gas_interference   # объяснимая карточка события
 python -m benchmark.run_benchmark    # метрики + ML GroupKFold
 python -m benchmark.redteam          # пороги приёмки, exit code 1 при нарушении
-python run_tests.py                  # pytest (≥28; currently 40+)
+python run_tests.py                  # pytest (≥28; currently 50)
 ```
 
 API (read-only, только 127.0.0.1): `uvicorn wellguard.api:app --host 127.0.0.1 --port 8000`  
 UI: `streamlit run app.py` (синтетика **или** загрузка canonical CSV, только чтение)  
-Docker: `docker compose up` (publish только loopback).
+Docker: `docker compose up` (publish только loopback).  
+Shadow / archive dry-run: `python -m wellguard.cli export-demo` → `python -m wellguard.cli shadow artifacts/demo_canonical.csv`  
+Публичный периметр утверждений: `docs/CLAIM_FREEZE.md` (без расширения обещаний письма).
 
 ## Конвейер
 
@@ -81,6 +83,12 @@ Demo — синтетика. Реальные открытые данные дл
 ## Лицензия
 
 Apache-2.0.
+
+## Release 0.1.5
+
+Pilot plumbing within the frozen INDUSTRIX letter: GPN contract validation, shadow journal
+disposition slots, CLI `shadow` / `validate-archive` / `export-demo`, claim-freeze doc,
+pilot sequence parity. No new product promises.
 
 ## Release 0.1.4
 
