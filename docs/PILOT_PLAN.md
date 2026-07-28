@@ -40,3 +40,12 @@ read-only shadow, без подключения к управлению.
 
 Денежный эффект, полевая точность и готовность к автономной эксплуатации
 **не заявляются** до завершения архивной проверки и shadow-режима.
+
+## Артефакты пилота (без расширения claim’ов)
+
+| Артефакт | Назначение |
+| --- | --- |
+| `docs/GO_NO_GO_CHECKLIST.md` | Решение продолжение / доработка / остановка |
+| `docs/EXPERT_LABELING.md` + `data/templates/expert_labeling_template.csv` | Экспертная разметка эпизодов |
+| `python -m wellguard.cli shadow-report <jsonl>` | Dry-run сводка журнала shadow (не field claim) |
+| `docs/CLAIM_FREEZE.md` | Границы публичных утверждений = письмо |

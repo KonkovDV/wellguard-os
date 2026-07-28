@@ -29,6 +29,10 @@ def main(argv=None):
     sh.add_argument("--window", type=int, default=720)
     sh.add_argument("--step", type=int, default=60)
 
+    sr = sub.add_parser("shadow-report", help="summarize shadow JSONL into dry-run pilot report (not field validation)")
+    sr.add_argument("jsonl")
+    sr.add_argument("--output", default=None)
+
     v = sub.add_parser("validate-archive", help="validate CSV against GPN archive contract + QC")
     v.add_argument("csv")
     v.add_argument("--pressure-unit", default="bar", choices=["bar", "psi"])
@@ -70,6 +74,11 @@ def main(argv=None):
     if a.cmd == "shadow":
         from shadow.run_shadow import replay
         print(json.dumps(replay(a.csv, a.output, window=a.window, step=a.step), ensure_ascii=False, indent=2))
+        return 0
+
+    if a.cmd == "shadow-report":
+        from shadow.report_shadow import write_report
+        print(json.dumps(write_report(a.jsonl, a.output), ensure_ascii=False, indent=2))
         return 0
 
     if a.cmd == "validate-archive":

@@ -1,0 +1,5 @@
+well_id_hash,episode_id,t_start_min,t_end_min,expert_class,plant_alarm_active,confirmed,useful_for_technologist,notes_code,source
+w001,ep001,240,360,gas_interference,0,1,1,RAPORT_OK,daily_report
+w001,ep002,400,480,operation_change,0,1,1,FREQ_STEP,technologist
+w001,ep003,500,560,sensor_fault_suspected,1,0,1,CHECK_KIP,alarm_review
+w002,ep001,100,200,normal,0,1,1,NO_EVENT,baseline

@@ -1,4 +1,4 @@
-# WellGuard OS v0.1.5
+# WellGuard OS v0.1.6
 
 Открытый on-prem **адвайзорный демонстратор** раннего выявления, классификации и временной
 локализации осложнённых режимов механизированной скважины (ЭЦН) по штатной телеметрии.
@@ -36,7 +36,8 @@ python run_tests.py                  # pytest (≥28; currently 50)
 API (read-only, только 127.0.0.1): `uvicorn wellguard.api:app --host 127.0.0.1 --port 8000`  
 UI: `streamlit run app.py` (синтетика **или** загрузка canonical CSV, только чтение)  
 Docker: `docker compose up` (publish только loopback).  
-Shadow / archive dry-run: `python -m wellguard.cli export-demo` → `python -m wellguard.cli shadow artifacts/demo_canonical.csv`  
+Shadow / archive dry-run: `python -m wellguard.cli export-demo` → `shadow` → `shadow-report`  
+Пилот: `docs/PILOT_PLAN.md`, `docs/GO_NO_GO_CHECKLIST.md`, `docs/EXPERT_LABELING.md`  
 Публичный периметр утверждений: `docs/CLAIM_FREEZE.md` (без расширения обещаний письма).
 
 ## Конвейер
@@ -83,6 +84,11 @@ Demo — синтетика. Реальные открытые данные дл
 ## Лицензия
 
 Apache-2.0.
+
+## Release 0.1.6
+
+Pilot review kit inside the frozen letter: go/no-go checklist, expert labeling
+template, shadow-report dry-run summary. Still no field-accuracy or economic claims.
 
 ## Release 0.1.5
 
