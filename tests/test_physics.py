@@ -7,7 +7,7 @@ def test_features_shape_and_finite():
     df = generate("normal", seed=1)
     f = physics_features(df)
     assert len(f) == len(df)
-    for c in ["head_coef", "q_per_freq", "current_per_q", "current_var"]:
+    for c in ["head_coef", "q_per_freq", "current_per_q", "current_var", "current_per_freq", "intake_var"]:
         assert np.isfinite(f[c].to_numpy()).all()
 
 def test_mode_change_detected_on_operation_change():

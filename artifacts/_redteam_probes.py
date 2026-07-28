@@ -74,6 +74,25 @@ expect("api_try_run", "HTTPException(422" in api or "422" in api, "422 on pipeli
 docker = (ROOT / "Dockerfile").read_text(encoding="utf-8")
 expect("docker_host", "0.0.0.0" in docker.split("CMD")[-1], docker.strip().splitlines()[-1])
 
+# --- Research alignment (letter classes only) ---
+card = run(generate("gas_interference", seed=0))
+expect("gas_consistency", "consistency" in card["drivers"] and "intake_var_z" in card["drivers"]["consistency"],
+       str(card["drivers"].get("consistency")))
+expect("gas_supports", all(k in card["drivers"] for k in (
+    "casing_support", "rate_support", "pip_osc_support", "cooling_support", "whp_drop_support")),
+       str({k: card["drivers"].get(k) for k in (
+           "casing_support", "rate_support", "pip_osc_support", "cooling_support", "whp_drop_support")}))
+expect("gas_sensor_coverage", "sensor_coverage" in card["drivers"], str(card["drivers"].keys()))
+
+card = run(generate("intake_restriction", seed=0))
+expect("restr_plugging_supports",
+       card["event_class"] == "intake_restriction" and card["drivers"].get("pip_rise_support") is True,
+       str(card["drivers"]))
+
+card = run(generate("operation_change", seed=0))
+expect("op_change_affinity", card["event_class"] == "operation_change"
+       and card["drivers"].get("affinity_consistent") is True, card["event_class"])
+
 # --- Floors ---
 from benchmark.redteam import evaluate
 r, v = evaluate()

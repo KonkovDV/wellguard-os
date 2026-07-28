@@ -41,7 +41,7 @@
     "Timestamp timezone and sampling interval are mandatory",
     "Event labels are supplied by the asset owner and never inferred by the loader",
     "Archive remains on the owner's controlled storage",
-    "optional_channels are accepted for pilot correlation; only water_cut_pct currently reinforces water_breakthrough_candidate",
+    "optional_channels are accepted for pilot correlation; water_cut_pct reinforces water_breakthrough_candidate; gas_factor_m3m3/gas_rate_m3d reinforce gas_interference only",
     "esp_start_stop, existing_alarm, daily_report_flag, intervention_flag are passthrough for shadow journaling"
   ]
 }

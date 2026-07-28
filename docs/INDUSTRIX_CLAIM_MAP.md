@@ -9,7 +9,8 @@
 | Российское ПО | Локальный Python/API/UI, loopback Docker, Apache-2.0 | `pyproject.toml`, `Dockerfile` | Интеграционные адаптеры требуют пилота |
 | Evidence | 84 synthetic cases (7×12), ≥28 automated tests (suite grows with hardening), CI + RT probes | `benchmark/`, `tests/`, `artifacts/_redteam_probes.py` | Не полевая точность; 3W — loader, не field claim |
 | Входы | Режим `operating_mode` обязателен; `intake_p_bar` опционален | `wellguard/schema.py` | Без приёма деградируют gas/sensor-fault |
-| Опциональные поля | water_cut / gas / vibration / alarms / reports — контракт + passthrough | `data/contracts/gpn_archive_schema.json` | water_cut усиливает WB; остальное журнал/пилот |
+| Опциональные поля | water_cut усиливает WB; gas_factor/gas_rate усиливают gas; остальное журнал/пилот | `data/contracts/gpn_archive_schema.json` | Не меняет обязательные входы письма |
 | УТГ | Самооценка УТГ 4: воспроизводимый программный прототип | `docs/MODEL_CARD.md` | Не промышленная валидация |
 | Claim freeze | Публичные утверждения = письмо INDUSTRIX | `docs/CLAIM_FREEZE.md` | Без расширения обещаний |
 | Пилот | Go/no-go + разметка + shadow-report | `docs/GO_NO_GO_CHECKLIST.md`, `docs/EXPERT_LABELING.md`, `shadow/report_shadow.py` | Dry-run ≠ field claim |
+| Research refresh | SPE 230862 / Sci.Reports / Appl.Sci gas-lock / JPEPT plugging → Modes A/B + plugging | `docs/RESEARCH_AUDIT_2026_07.md`, `wellguard/classify.py` | Без RUL / APC / новых классов |

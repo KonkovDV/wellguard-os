@@ -4,7 +4,8 @@ import pandas as pd
 
 # Physics-guided features. Simplified, mechanistically motivated proxies
 # (affinity laws + power/rate coupling). NOT a full electro-hydraulic ESP model.
-# Assumptions documented in docs/PHYSICS.md.
+# Grounded in SPE 230862 / SPE 229219 hybrid rule-first practice and affinity-law
+# surveillance; see docs/PHYSICS.md and docs/RESEARCH_AUDIT_2026_07.md.
 
 EPS = 1e-6
 
@@ -16,28 +17,37 @@ def physics_features(df: pd.DataFrame) -> pd.DataFrame:
     current = np.asarray(df["current_a"], dtype=float)
     load = np.asarray(df["load_pct"], dtype=float)
     motor_t = np.asarray(df["motor_t_c"], dtype=float)
+    casing = np.asarray(df["casing_p_bar"], dtype=float) if "casing_p_bar" in df.columns else np.full(len(df), np.nan)
 
     if "intake_p_bar" in df.columns:
         intake = np.asarray(df["intake_p_bar"], dtype=float)
     else:
         intake = np.full(len(df), np.nan)
 
-    # Pump differential proxy and head coefficient via affinity law (H ~ f^2).
+    # Affinity-law proxies (valid mainly for moderate speed changes; thresholds recalibrate on archive).
     pump_dp = intake - whp
-    head_coef = pump_dp / (freq_n ** 2 + EPS)
-    q_per_freq = q / (freq_n + EPS)
-    current_per_q = current / (np.abs(q) + EPS)
+    head_coef = pump_dp / (freq_n ** 2 + EPS)          # H ~ f^2
+    q_per_freq = q / (freq_n + EPS)                     # Q ~ f
+    current_per_freq = current / (freq_n + EPS)         # liquid-dominated power/speed coupling
+    current_per_q = current / (np.abs(q) + EPS)         # density / water-cut proxy
+    # Local current / PIP variability — gas interference signature on routine telemetry
+    # (Sci. Reports 2026 gas-lock: amperage + PIP oscillation; HF electrical APC out of scope).
     cur = pd.Series(current)
     current_var = cur.rolling(9, min_periods=3).std().bfill().to_numpy()
+    intake_var = pd.Series(intake).rolling(9, min_periods=3).std().bfill().to_numpy()
 
     out = pd.DataFrame({
         "t_min": np.asarray(df["t_min"], dtype=float),
         "freq_n": freq_n,
         "head_coef": head_coef,
         "q_per_freq": q_per_freq,
+        "current_per_freq": current_per_freq,
         "current_per_q": current_per_q,
         "current_var": current_var,
+        "intake_var": intake_var,
         "intake_p_bar": intake,
+        "whp_bar": whp,
+        "casing_p_bar": casing,
         "current_a": current,
         "load_pct": load,
         "q_liq_m3d": q,

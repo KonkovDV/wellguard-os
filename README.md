@@ -140,6 +140,13 @@ docs/               physics, threat model, pilot, claim freeze
 artifacts/          локальные demo/shadow выходы (не field evidence)
 ```
 
+## Научная опора (без field claim)
+
+Свежие работы 2024–2026 (SPE 230862, Sci. Reports gas-lock, Appl. Sci. / SPE 201476,
+JPEPT plugging, 3W 2.0.0) → physics-guided rules, два полевых режима газа в одном
+классе письма, отделение засорения от gas-lock pattern — без RUL и без управления.
+Сводка: [`docs/RESEARCH_AUDIT_2026_07.md`](docs/RESEARCH_AUDIT_2026_07.md).
+
 ## Лицензия
 
-Apache-2.0. Версия пакета: см. `pyproject.toml` / `wellguard.__version__`.
+Apache-2.0. Версия пакета: `0.1.10` (`pyproject.toml` / `wellguard.__version__`).

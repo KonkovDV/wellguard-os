@@ -59,18 +59,22 @@ def generate(scenario: str, seed: int = 0, n: int = 720, onset: int | None = Non
     quality = np.ones(n)
 
     if scenario == "gas_interference":
-        # cyclic current, intake pressure drop, head coefficient loss, mild rate loss
+        # cyclic current + PIP oscillation, intake drop, rate decline; mild casing rise
         cyc = np.sin(2 * np.pi * idx / 9.0) * step
         b["current"] += 6.0 * ramp * cyc + 1.5 * ramp
-        b["intake"] -= 10.0 * ramp
-        b["q"] -= 8.0 * ramp
+        b["intake"] -= 10.0 * ramp + 1.8 * ramp * cyc
+        b["q"] -= 8.0 * ramp + 2.0 * ramp * cyc
         b["load"] += 3.0 * ramp * cyc
+        b["casing"] += 2.5 * ramp
+        b["motor_t"] += 2.0 * ramp  # impaired cooling (Sci. Reports gas-lock)
+        b["whp"] -= 1.5 * ramp * np.abs(cyc)  # WHP soft drop / osc (head loss proxy)
     elif scenario == "intake_restriction":
-        # sustained rate + load + intake decline, current down, head coef up
+        # JPEPT 2024 intake plugging field pattern: rate/load/current down, PIP + annulus up
         b["q"] -= 30.0 * ramp
         b["load"] -= 12.0 * ramp
-        b["intake"] -= 16.0 * ramp
+        b["intake"] += 14.0 * ramp
         b["current"] -= 5.0 * ramp
+        b["casing"] += 2.0 * ramp
     elif scenario == "water_breakthrough":
         # slow density rise: current and motor temp creep up, rate ~flat, head stable
         slow = np.clip((idx - onset) / 240.0, 0, 1)
