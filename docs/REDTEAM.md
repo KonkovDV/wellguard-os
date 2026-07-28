@@ -19,8 +19,14 @@
 6. **NaN/Inf/non-numeric** — QC считает нечисловые и неfinite значения дефектом; pipeline fail-closed.
 7. **Out-of-range** — значения вне физических диапазонов → `sensor_quality_issue` (не `normal`).
 8. **Шаг частоты при активном газе** — не маскирует осложнение; приоритет у gas_interference.
-9. **Early-onset / warmup poisoning** — onset≈0 всё ещё должен обнаруживать gas_interference (stable baseline window).
+9. **Early-onset / warmup poisoning** — onset≈0 всё ещё должен обнаруживать gas_interference (absolute head/tail).
 10. **Неустойчивый dtype** — числовые строки coerce'ятся; мусор → fail-closed, без TypeError.
+11. **water_cut alone** — опциональная обводнённость не создаёт complication без physics hold.
+12. **Таймлайн** — реверс / дубликаты → `sensor_quality_issue`.
+13. **Длинная annotation** — free-text >64 символов → QC defect (anti-PII).
+14. **API** — лимиты размера/строк/колонок; pipeline reject → HTTP 422.
+
+Автопрогон: `python artifacts/_redteam_probes.py` (также в CI).
 
 ## Остаточные риски
 Показатели получены на синтетике с разделимыми классами. Это **не полевая точность**. На реальных данных классы перекрываются, пороги требуют рекалибровки.

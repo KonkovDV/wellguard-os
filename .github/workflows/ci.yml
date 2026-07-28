@@ -9,5 +9,6 @@ jobs:
         with: {python-version: '3.12'}
       - run: python -m pip install -e '.[dev]'
       - run: python -m pytest -q
+      - run: python artifacts/_redteam_probes.py
       - run: python -m benchmark.redteam
       - run: python -m benchmark.run_benchmark

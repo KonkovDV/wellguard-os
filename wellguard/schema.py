@@ -2,7 +2,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-# Canonical telemetry contract aligned with INDUSTRIX application (v0.1.4).
+# Canonical telemetry contract aligned with INDUSTRIX application letter (frozen claims).
 # Intake pressure is optional ("если доступно"); operating_mode is a declared mode label.
 
 REQUIRED_CHANNELS = [
@@ -150,6 +150,16 @@ def qc_report(df: pd.DataFrame) -> dict:
         modes = df[MODE_COL].astype(str).str.strip()
         if modes.eq("").any() | modes.str.lower().isin(["nan", "none"]).any():
             issues.append("invalid_operating_mode")
+
+    if "operator_annotation" in df.columns:
+        # Coded notes only — reject long free-text that may carry PII.
+        lengths = df["operator_annotation"].astype(str).str.len()
+        too_long = int((lengths > 64).sum())
+        if too_long:
+            issues.append(f"operator_annotation_too_long:{too_long}")
+
+    if len(df.columns) > 256:
+        issues.append(f"too_many_columns:{len(df.columns)}")
 
     completeness = 0.0
     if QUALITY_COL in df.columns:

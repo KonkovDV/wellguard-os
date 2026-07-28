@@ -11,11 +11,14 @@ from wellguard.generator import generate, SCENARIOS
 from wellguard.physics import physics_features
 from wellguard.pipeline import run
 
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+
 st.set_page_config(page_title="WellGuard OS", layout="wide")
 st.title("WellGuard OS — advisory ESP well surveillance")
 st.caption(
     "Research demonstrator. Advisory only. Never actuates equipment. "
-    "Карточка — повод для проверки, не диагноз отказа/аварии."
+    "Карточка — повод для проверки, не диагноз отказа/аварии. "
+    "Метрики на синтетике ≠ полевая точность."
 )
 
 col = st.sidebar
@@ -30,7 +33,14 @@ else:
     if uploaded is None:
         st.info("Загрузите CSV с каноническими каналами (см. docs / GPN contract).")
         st.stop()
+    raw = uploaded.getvalue()
+    if len(raw) > MAX_UPLOAD_BYTES:
+        st.error("Файл слишком большой (max 25 MiB).")
+        st.stop()
     df = pd.read_csv(uploaded)
+    if df.empty:
+        st.error("Пустой CSV.")
+        st.stop()
 
 card = run(df)
 

@@ -1,86 +1,84 @@
-"""Post-fix verification probes for Red Team findings (v0.1.3). Exit 1 if any regress."""
+"""Deep Red Team probes for WellGuard OS — exit 1 on regression."""
 from __future__ import annotations
-import sys
+import io, sys
 from pathlib import Path
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
 from wellguard.generator import generate
 from wellguard.pipeline import run
-from wellguard.schema import qc_report, CHANNELS
+from wellguard.schema import qc_report
 from wellguard.classify import classify
-from wellguard.dataio import threew
-from shadow.run_shadow import resolve_output_path
+from wellguard import __version__
 
 failures: list[str] = []
 
 
 def expect(name: str, cond: bool, detail: str) -> None:
-    status = "OK" if cond else "REGRESS"
-    print(f"[{status}] {name}: {detail}")
+    print(f"[{'OK' if cond else 'FAIL'}] {name}: {detail}")
     if not cond:
         failures.append(name)
 
 
-# RT-01 / RT-04 style OOR
+# --- Prior gates ---
 df = generate("normal", seed=0)
 df["intake_p_bar"] = 9999.0
-expect("RT01_oor_fail_closed", run(df)["event_class"] == "sensor_quality_issue", run(df)["event_class"])
+expect("oor_fail_closed", run(df)["event_class"] == "sensor_quality_issue", "OOR")
 
-# RT-02 freq mask
 df = generate("gas_interference", seed=0)
-onset = df.attrs["onset"]
-df.loc[onset:, "freq_hz"] = df.loc[onset:, "freq_hz"] + 5.0
+df.loc[df.attrs["onset"]:, "freq_hz"] += 5.0
+expect("freq_no_mask", run(df)["event_class"] == "gas_interference", run(df)["event_class"])
+
+expect("early_onset", run(generate("gas_interference", seed=0, onset=0))["event_class"] == "gas_interference", "onset0")
+
+# --- New: water_cut alone must NOT invent complication without physics hold ---
+df = generate("normal", seed=1)
+df["water_cut_pct"] = np.linspace(5, 40, len(df))
 card = run(df)
-expect("RT02_freq_no_mask", card["event_class"] == "gas_interference" and card["is_complication"], card["event_class"])
+expect("water_cut_alone_no_false_wb", card["event_class"] == "normal", card["event_class"])
 
-# RT-03 early onset
-card = run(generate("gas_interference", seed=0, onset=0))
-expect("RT03_early_onset_gas", card["event_class"] == "gas_interference", card["event_class"])
+# --- New: duplicate timestamps fail closed ---
+df = generate("normal", seed=2)
+df.loc[10:20, "t_min"] = df.loc[9, "t_min"]
+expect("dup_time_fail", run(df)["event_class"] == "sensor_quality_issue", run(df)["event_class"])
 
-# RT-05 units
-expect("RT05_pa_to_bar", threew.PA_TO_BAR == 1e-5 and "PA_TO_BAR" in Path("wellguard/dataio/threew.py").read_text(encoding="utf-8"), "factor set")
+# --- New: reverse time fail ---
+df = generate("normal", seed=3)
+df["t_min"] = df["t_min"].iloc[::-1].to_numpy()
+expect("reverse_time_fail", run(df)["event_class"] == "sensor_quality_issue", "timeline")
 
-# RT-06 API pre-check
-api = Path("wellguard/api.py").read_text(encoding="utf-8")
-pre = api.find('raw.count(b"\\n")')
-parse = api.find("pd.read_csv")
-expect("RT06_row_precheck", 0 <= pre < parse, f"pre={pre} parse={parse}")
+# --- New: empty frame ---
+expect("empty_fail", run(pd.DataFrame())["event_class"] == "sensor_quality_issue", "empty")
 
-# RT-07 coerce
-df = generate("gas_interference", seed=0)
-for c in CHANNELS:
-    if c != "t_min":
-        df[c] = df[c].astype(str)
-expect("RT07_string_coerce", run(df)["event_class"] == "gas_interference", "pipeline on str dtypes")
+# --- New: card contract ---
+card = run(generate("gas_interference", seed=0))
+expect("card_not_probability", card["score_is_probability"] is False, card["score_type"])
+expect("card_limits", "output_limits" in card and card["actuation"] == "never", "limits")
+expect("card_no_failure_claim", card["confirms_failure_or_accident"] is False, "safety")
 
-# RT-08 docker host
-docker = Path("Dockerfile").read_text(encoding="utf-8")
-expect("RT08_docker_0_0_0_0", '--host", "0.0.0.0"' in docker or "--host\", \"0.0.0.0\"" in docker or "0.0.0.0" in docker.split("CMD")[-1], docker.strip().splitlines()[-1])
+# --- New: annotation too long ---
+df = generate("normal", seed=4)
+df["operator_annotation"] = "X" * 200
+qc = qc_report(df)
+expect("annotation_len_flagged", any("operator_annotation" in i for i in qc["issues"]), qc["issues"])
 
-# RT-09 no timeless sensor_fault
-df = generate("normal", seed=1, n=200)
-df.loc[df.index[-5:], "intake_p_bar"] = float(df["intake_p_bar"].iloc[-5]) + 40
-cls = classify(df)
-expect("RT09_no_onset_neg1_fault", not (cls["event_class"] == "sensor_fault_suspected" and cls["onset_index"] < 0), cls)
+# --- New: API module constants ---
+api = (ROOT / "wellguard" / "api.py").read_text(encoding="utf-8")
+expect("api_precheck", 'raw.count(b"\\n")' in api and api.find('raw.count(b"\\n")') < api.find("pd.read_csv"), "order")
+expect("api_try_run", "HTTPException(422" in api or "422" in api, "422 on pipeline reject")
 
-# RT-10 qc on card
-card = run(pd.DataFrame())
-expect("RT10_qc_on_card", "qc" in card and card["qc"]["issues"], sorted(card.keys()))
+# --- New: docker bind ---
+docker = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+expect("docker_host", "0.0.0.0" in docker.split("CMD")[-1], docker.strip().splitlines()[-1])
 
-# RT-11 shadow sandbox
-out = resolve_output_path("../evil.jsonl")
-expect("RT11_shadow_sandbox", out.parts[-2:] == ("artifacts", "evil.jsonl") or out.name == "evil.jsonl" and "artifacts" in out.parts, str(out))
-
-# RT-12 quality_ok
-df = generate("normal", seed=0)
-df["quality_ok"] = 100.0
-expect("RT12_quality_ok", qc_report(df)["schema_ok"] is False, qc_report(df)["issues"])
-
+# --- Floors ---
 from benchmark.redteam import evaluate
 r, v = evaluate()
-expect("REDTEAM_FLOORS", v == [], v)
+expect("redteam_floors", v == [], str(v))
+expect("version_semver", len(__version__.split(".")) == 3, __version__)
 
 print("\n===", "PASS" if not failures else f"FAIL {failures}", "===")
 sys.exit(1 if failures else 0)

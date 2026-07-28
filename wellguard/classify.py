@@ -168,7 +168,7 @@ def classify(df: pd.DataFrame) -> dict:
                                "operating_mode": current_mode})
         return result
 
-    # 5) water breakthrough candidate (+ optional water_cut_pct if present)
+    # 5) water breakthrough candidate; optional water_cut_pct only reinforces, never alone
     wb_cond = (z["current_per_q"] > 2.0) & (z["motor_t_c"] > 2.0)
     wb_onset = first_sustained(wb_cond, HOLD)
     water_cut_support = False
@@ -179,16 +179,13 @@ def classify(df: pd.DataFrame) -> dict:
             tail = float(np.nanmean(wc[-TAIL:]))
             water_cut_support = np.isfinite(head) and np.isfinite(tail) and (tail - head) > 2.0
     if (wb_onset >= 0 and s["current_per_q"] > 1.5 and s["motor_t_c"] > 1.5
-            and abs(s["q_per_freq"]) < 2.0) or (
-            water_cut_support and s["current_per_q"] > 1.0 and s["motor_t_c"] > 1.0
-            and abs(s["q_per_freq"]) < 2.5):
-        onset = wb_onset if wb_onset >= 0 else max(0, n - TAIL)
-        result.update(event_class="water_breakthrough_candidate", onset_index=int(onset),
+            and abs(s["q_per_freq"]) < 2.0):
+        result.update(event_class="water_breakthrough_candidate", onset_index=int(wb_onset),
                       is_complication=True,
                       confidence=0.6 if water_cut_support else 0.55,
                       drivers={"current_per_q_z": round(s["current_per_q"], 2),
                                "motor_t_z": round(s["motor_t_c"], 2),
-                               "water_cut_support": water_cut_support,
+                               "water_cut_support": bool(water_cut_support),
                                "operating_mode": current_mode})
         return result
 
